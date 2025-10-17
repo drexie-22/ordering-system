@@ -1,0 +1,137 @@
+Build a complete Ordering System web application using the following tech stack:
+Frontend: React + Tailwind CSS
+Backend: Node.js + Express
+ORM: Prisma (connected to PostgreSQL)
+Computation Module: C++ integrated with Node.js (child_process or node-addon-api)
+
+System Description
+
+This system allows customers to browse products, add them to a cart, and place orders without requiring user accounts (guest-based checkout).
+The admin can manage products, process orders, and generate reports.
+
+Core Features
+
+Customer Side:
+
+View all available products (name, price, description, image, and stock)
+Search and filter products by category or price range
+Add/remove items from the cart
+Calculate total price and apply discounts (via C++ module)
+Checkout form: name, address, contact number, payment option
+Receive confirmation/receipt after placing an order
+
+Admin Side:
+
+Simple admin login or passcode gate
+Dashboard showing total products, total orders, and total revenue
+Manage products (Add, Edit, Delete)
+Manage orders (Update status: Pending → Preparing → Out for Delivery → Completed)
+Auto-update stock levels after orders
+View and export sales reports (PDF or CSV)
+
+Database Schema (Prisma + PostgreSQL)
+
+Define models in prisma/schema.prisma:
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  price       Float
+  category    String
+  imageUrl    String
+  stock       Int
+  createdAt   DateTime @default(now())
+  orderItems  OrderItem[]
+}
+
+model Order {
+  id             Int         @id @default(autoincrement())
+  customerName   String
+  contact        String
+  address        String
+  paymentMethod  String
+  totalAmount    Float
+  status         String      @default("Pending")
+  createdAt      DateTime    @default(now())
+  orderItems     OrderItem[]
+}
+
+model OrderItem {
+  id        Int      @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int
+  subtotal  Float
+
+  order     Order   @relation(fields: [orderId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+C++ Computation Module
+
+Create a file named price_calculator.cpp that:
+Accepts a list of item prices and quantities
+Calculates total and applies a 10% discount if total > ₱1000
+Outputs the final total back to Node.js
+Node.js should communicate with this C++ script using:
+const { spawn } = require("child_process");
+
+Frontend Routes (React + Tailwind)
+
+/ → Product listing
+/cart → View cart and checkout
+/order-success → Order confirmation page
+/admin → Admin dashboard (products, orders, reports)
+
+Use React Router and Axios to connect to backend API endpoints.
+
+UI and UX
+
+Theme: Dark + Blue gradient (modern, clean layout)
+Rounded corners, subtle shadows
+Responsive for mobile, tablet, desktop
+Include loading states and toasts for actions (order placed, product added, etc.)
+
+Backend API Endpoints
+GET    /api/products          → Fetch all products
+POST   /api/products          → Add a product
+PUT    /api/products/:id      → Update a product
+DELETE /api/products/:id      → Delete a product
+
+POST   /api/orders            → Place a new order
+GET    /api/orders            → View all orders
+PUT    /api/orders/:id/status → Update order status
+GET    /api/reports           → Fetch sales summaries
+
+Recommended Folder Structure
+/client
+  ├── src/
+  │   ├── pages/
+  │   ├── components/
+  │   ├── App.jsx
+  │   ├── index.css
+  │   └── main.jsx
+
+/server
+  ├── prisma/
+  │   └── schema.prisma
+  ├── src/
+  │   ├── routes/
+  │   ├── controllers/
+  │   ├── utils/
+  │   └── app.js
+  ├── price_calculator.cpp
+  ├── package.json
+
+.env
+
+Additional Requirements
+
+Include README.md with setup instructions
+Include prisma/seed.js to insert sample products
+Handle all CRUD operations through Prisma ORM
+Connect to PostgreSQL database via .env file
+Test all routes using sample data
+
+Goal:
+A fully functional, production-quality Ordering System that uses React + Tailwind for the frontend, Node.js + Express + Prisma + PostgreSQL for the backend, and a C++ computation module for total price calculations and discounts.
