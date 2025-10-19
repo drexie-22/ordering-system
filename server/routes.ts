@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertProductSchema, insertOrderSchema, insertOrderItemSchema } from "@shared/schema";
+import { insertProductSchema, insertOrderSchema, insertOrderItemSchema } from "@shared/types";
 import { spawn } from "child_process";
 import { z } from "zod";
 import path from "path";

@@ -1,17 +1,13 @@
-import {
-  products,
-  orders,
-  orderItems,
-  type Product,
-  type InsertProduct,
-  type Order,
-  type InsertOrder,
-  type OrderItem,
-  type InsertOrderItem,
-  type OrderWithItems,
-} from "@shared/schema";
-import { db } from "./db";
-import { eq, desc, and, gte, lte, ilike, or, sql } from "drizzle-orm";
+import type {
+  Product,
+  Order,
+  OrderItem,
+  InsertProduct,
+  InsertOrder,
+  InsertOrderItem,
+  OrderWithItems,
+} from "@shared/types";
+import prisma from "./db";
 
 export interface IStorage {
   // Products
@@ -36,95 +32,107 @@ export interface IStorage {
 export class DatabaseStorage implements IStorage {
   // Products
   async getAllProducts(): Promise<Product[]> {
-    return db.select().from(products).orderBy(desc(products.createdAt));
+    return await prisma.product.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
   }
 
   async getProductById(id: number): Promise<Product | undefined> {
-    const [product] = await db.select().from(products).where(eq(products.id, id));
+    const product = await prisma.product.findUnique({
+      where: { id }
+    });
     return product || undefined;
   }
 
   async createProduct(product: InsertProduct): Promise<Product> {
-    const [newProduct] = await db
-      .insert(products)
-      .values(product)
-      .returning();
-    return newProduct;
+    return await prisma.product.create({
+      data: product
+    });
   }
 
   async updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product | undefined> {
-    const [updated] = await db
-      .update(products)
-      .set(product)
-      .where(eq(products.id, id))
-      .returning();
-    return updated || undefined;
+    try {
+      const updated = await prisma.product.update({
+        where: { id },
+        data: product
+      });
+      return updated;
+    } catch (error) {
+      return undefined;
+    }
   }
 
   async deleteProduct(id: number): Promise<boolean> {
-    const result = await db.delete(products).where(eq(products.id, id));
-    return result.rowCount ? result.rowCount > 0 : false;
+    try {
+      await prisma.product.delete({
+        where: { id }
+      });
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 
   async searchProducts(query: string): Promise<Product[]> {
-    return db
-      .select()
-      .from(products)
-      .where(
-        or(
-          ilike(products.name, `%${query}%`),
-          ilike(products.description, `%${query}%`)
-        )
-      )
-      .orderBy(desc(products.createdAt));
+    return await prisma.product.findMany({
+      where: {
+        OR: [
+          { name: { contains: query, mode: 'insensitive' } },
+          { description: { contains: query, mode: 'insensitive' } }
+        ]
+      },
+      orderBy: { createdAt: 'desc' }
+    });
   }
 
   async filterProducts(category?: string, minPrice?: number, maxPrice?: number): Promise<Product[]> {
-    const conditions = [];
+    const where: any = {};
     
     if (category) {
-      conditions.push(eq(products.category, category));
+      where.category = category;
     }
     if (minPrice !== undefined) {
-      conditions.push(gte(products.price, minPrice));
+      where.price = { ...where.price, gte: minPrice };
     }
     if (maxPrice !== undefined) {
-      conditions.push(lte(products.price, maxPrice));
+      where.price = { ...where.price, lte: maxPrice };
     }
 
-    if (conditions.length === 0) {
+    if (Object.keys(where).length === 0) {
       return this.getAllProducts();
     }
 
-    return db
-      .select()
-      .from(products)
-      .where(and(...conditions))
-      .orderBy(desc(products.createdAt));
+    return await prisma.product.findMany({
+      where,
+      orderBy: { createdAt: 'desc' }
+    });
   }
 
   // Orders
   async createOrder(order: InsertOrder, items: InsertOrderItem[]): Promise<Order> {
-    return await db.transaction(async (tx) => {
-      const [newOrder] = await tx
-        .insert(orders)
-        .values(order)
-        .returning();
+    return await prisma.$transaction(async (tx) => {
+      const newOrder = await tx.order.create({
+        data: order
+      });
 
-      const orderItemsWithOrderId = items.map((item) => ({
-        ...item,
-        orderId: newOrder.id,
-      }));
-
-      await tx.insert(orderItems).values(orderItemsWithOrderId);
+      await tx.orderItem.createMany({
+        data: items.map((item) => ({
+          orderId: newOrder.id,
+          productId: item.productId,
+          quantity: item.quantity,
+          subtotal: item.subtotal,
+        }))
+      });
 
       for (const item of items) {
-        await tx
-          .update(products)
-          .set({
-            stock: sql`${products.stock} - ${item.quantity}`,
-          })
-          .where(eq(products.id, item.productId));
+        await tx.product.update({
+          where: { id: item.productId },
+          data: {
+            stock: {
+              decrement: item.quantity
+            }
+          }
+        });
       }
 
       return newOrder;
@@ -132,86 +140,63 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllOrders(): Promise<OrderWithItems[]> {
-    const allOrders = await db.select().from(orders).orderBy(desc(orders.createdAt));
+    const orders = await prisma.order.findMany({
+      include: {
+        orderItems: {
+          include: {
+            product: true
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
 
-    const ordersWithItems = await Promise.all(
-      allOrders.map(async (order) => {
-        const items = await db
-          .select({
-            id: orderItems.id,
-            orderId: orderItems.orderId,
-            productId: orderItems.productId,
-            quantity: orderItems.quantity,
-            subtotal: orderItems.subtotal,
-            product: products,
-          })
-          .from(orderItems)
-          .innerJoin(products, eq(orderItems.productId, products.id))
-          .where(eq(orderItems.orderId, order.id));
-
-        return {
-          ...order,
-          orderItems: items,
-        };
-      })
-    );
-
-    return ordersWithItems;
+    return orders;
   }
 
   async getOrderById(id: number): Promise<OrderWithItems | undefined> {
-    const [order] = await db.select().from(orders).where(eq(orders.id, id));
+    const order = await prisma.order.findUnique({
+      where: { id },
+      include: {
+        orderItems: {
+          include: {
+            product: true
+          }
+        }
+      }
+    });
 
-    if (!order) {
-      return undefined;
-    }
-
-    const items = await db
-      .select({
-        id: orderItems.id,
-        orderId: orderItems.orderId,
-        productId: orderItems.productId,
-        quantity: orderItems.quantity,
-        subtotal: orderItems.subtotal,
-        product: products,
-      })
-      .from(orderItems)
-      .innerJoin(products, eq(orderItems.productId, products.id))
-      .where(eq(orderItems.orderId, order.id));
-
-    return {
-      ...order,
-      orderItems: items,
-    };
+    return order || undefined;
   }
 
   async updateOrderStatus(id: number, status: string): Promise<Order | undefined> {
-    const [updated] = await db
-      .update(orders)
-      .set({ status })
-      .where(eq(orders.id, id))
-      .returning();
-    return updated || undefined;
+    try {
+      const updated = await prisma.order.update({
+        where: { id },
+        data: { status }
+      });
+      return updated;
+    } catch (error) {
+      return undefined;
+    }
   }
 
   // Reports
   async getReports(): Promise<{ totalProducts: number; totalOrders: number; totalRevenue: number }> {
-    const [productCount] = await db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(products);
-
-    const [orderCount] = await db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(orders);
-
-    const [revenueResult] = await db
-      .select({ total: sql<number>`COALESCE(sum(${orders.totalAmount}), 0)::float` })
-      .from(orders);
+    const [productCount, orderCount, revenueResult] = await Promise.all([
+      prisma.product.count(),
+      prisma.order.count(),
+      prisma.order.aggregate({
+        _sum: {
+          totalAmount: true
+        }
+      })
+    ]);
 
     return {
-      totalProducts: productCount?.count || 0,
-      totalOrders: orderCount?.count || 0,
-      totalRevenue: revenueResult?.total || 0,
+      totalProducts: productCount,
+      totalOrders: orderCount,
+      totalRevenue: revenueResult._sum.totalAmount || 0,
     };
   }
 }

@@ -1,5 +1,4 @@
-import { db } from "./db";
-import { products } from "@shared/schema";
+import prisma from "./db";
 
 const sampleProducts = [
   {
@@ -104,7 +103,9 @@ async function seed() {
   try {
     console.log("Seeding database...");
     
-    await db.insert(products).values(sampleProducts);
+    await prisma.product.createMany({
+      data: sampleProducts
+    });
     
     console.log(`✓ Successfully seeded ${sampleProducts.length} products`);
     process.exit(0);
