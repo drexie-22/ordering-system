@@ -55,20 +55,23 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
 }));
 
 // Insert schemas
-export const insertProductSchema = createInsertSchema(products).omit({
+const productInsertBase = createInsertSchema(products);
+export const insertProductSchema = productInsertBase.omit({
   id: true,
   createdAt: true,
-});
+} as const);
 
-export const insertOrderSchema = createInsertSchema(orders).omit({
+const orderInsertBase = createInsertSchema(orders);
+export const insertOrderSchema = orderInsertBase.omit({
   id: true,
   createdAt: true,
   status: true,
-});
+} as const);
 
-export const insertOrderItemSchema = createInsertSchema(orderItems).omit({
+const orderItemInsertBase = createInsertSchema(orderItems);
+export const insertOrderItemSchema = orderItemInsertBase.omit({
   id: true,
-});
+} as const);
 
 // Types
 export type Product = typeof products.$inferSelect;
