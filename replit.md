@@ -4,7 +4,7 @@
 
 OrderFlow is a modern ordering system web application that enables customers to browse products, manage shopping carts, and place orders through a guest-based checkout experience. The platform features a comprehensive admin dashboard for product and order management, with integrated sales reporting capabilities.
 
-The application is built with a React frontend using shadcn/ui components with a dark theme and blue gradient aesthetic, powered by a Node.js/Express backend with PostgreSQL database integration via Drizzle ORM. A unique feature includes C++ integration for discount calculations, demonstrating hybrid architecture capabilities.
+The application is built with a React frontend using shadcn/ui components with a dark theme and blue gradient aesthetic, powered by a Node.js/Express backend with SQLite database integration via Prisma ORM. A unique feature includes C++ integration for discount calculations, demonstrating hybrid architecture capabilities.
 
 ## User Preferences
 
@@ -45,8 +45,8 @@ Preferred communication style: Simple, everyday language.
 **Technology Stack:**
 - **Runtime**: Node.js with Express.js
 - **Language**: TypeScript with ESM modules
-- **ORM**: Drizzle ORM
-- **Database Driver**: @neondatabase/serverless (Neon PostgreSQL with WebSocket support)
+- **ORM**: Prisma ORM
+- **Database**: SQLite (local file-based database for development)
 - **Build Tool**: esbuild for production bundling
 - **Development**: tsx for TypeScript execution
 
@@ -76,10 +76,10 @@ Preferred communication style: Simple, everyday language.
 ### Database Architecture
 
 **ORM Configuration:**
-- Drizzle ORM with PostgreSQL dialect
-- Schema-first approach with TypeScript type generation
-- Migration system using drizzle-kit
-- Connection pooling via Neon serverless driver
+- Prisma ORM with SQLite provider
+- Schema-first approach with TypeScript type generation via Prisma Client
+- Migration system using Prisma Migrate
+- File-based database (dev.db) for local development
 
 **Database Schema:**
 
@@ -113,7 +113,7 @@ Preferred communication style: Simple, everyday language.
 **Data Relationships:**
 - Products → Order Items (one-to-many)
 - Orders → Order Items (one-to-many)
-- Drizzle relations configured for query optimization
+- Prisma relations configured with foreign keys and referential integrity
 
 **Stock Management:**
 - Automatic stock deduction on order placement
@@ -123,9 +123,9 @@ Preferred communication style: Simple, everyday language.
 ### External Dependencies
 
 **Database Service:**
-- **Neon PostgreSQL**: Serverless PostgreSQL with WebSocket support
-- Connection via `DATABASE_URL` environment variable
-- Pooled connections for performance
+- **SQLite**: Lightweight, file-based relational database
+- Connection via `DATABASE_URL` environment variable (set to `file:./dev.db`)
+- No connection pooling needed for file-based database
 
 **UI Component Libraries:**
 - **Radix UI**: Headless UI primitives (@radix-ui/react-*)
@@ -135,9 +135,9 @@ Preferred communication style: Simple, everyday language.
 
 **Form & Validation:**
 - **React Hook Form**: Form state management
-- **Zod**: Schema validation
+- **Zod**: Schema validation and API request/response validation
 - **@hookform/resolvers**: Zod integration for forms
-- **drizzle-zod**: Generate Zod schemas from Drizzle schema
+- **Prisma Client**: Auto-generated TypeScript types from database schema
 
 **Utility Libraries:**
 - **date-fns**: Date formatting and manipulation
