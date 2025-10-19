@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import { Link } from "wouter";
-import type { Product } from "@shared/schema";
+import type { Product } from "@shared/types";
 
 export interface CartItem {
   product: Product;

@@ -20,7 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Package, ShoppingCart, DollarSign, LayoutDashboard, PackageSearch, ShoppingBag, Plus, Pencil, Trash2, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import type { Product, OrderWithItems } from "@shared/schema";
+import type { Product, OrderWithItems } from "@shared/types";
 
 export default function AdminDashboardPage() {
   const { toast } = useToast();

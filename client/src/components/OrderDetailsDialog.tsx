@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import type { OrderWithItems } from "@shared/schema";
+import type { OrderWithItems } from "@shared/types";
 import { format } from "date-fns";
 
 interface OrderDetailsDialogProps {

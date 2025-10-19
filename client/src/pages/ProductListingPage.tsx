@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ShoppingBag, Package } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type { Product } from "@shared/schema";
+import type { Product } from "@shared/types";
 
 export default function ProductListingPage() {
   const { toast } = useToast();

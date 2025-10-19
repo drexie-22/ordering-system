@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, ShoppingBag, Printer } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { OrderWithItems } from "@shared/schema";
+import type { OrderWithItems } from "@shared/types";
 import { format } from "date-fns";
 
 export default function OrderSuccessPage() {

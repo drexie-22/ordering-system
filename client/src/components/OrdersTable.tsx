@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { Eye } from "lucide-react";
-import type { OrderWithItems } from "@shared/schema";
+import type { OrderWithItems } from "@shared/types";
 import { format } from "date-fns";
 
 interface OrdersTableProps {
