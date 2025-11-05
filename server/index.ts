@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import os from "os";
 
 const app = express();
 app.use(express.json());
@@ -60,12 +61,26 @@ app.use((req, res, next) => {
   // Other ports are firewalled. Default to 5000 if not specified.
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
+    const port = parseInt(process.env.PORT || "5000", 10);
+  const host = "0.0.0.0";
+
+  // For local dev (Windows), reusePort should be false
+  const reusePort = process.platform !== "win32";
+
+  server.listen({ port, host, reusePort }, () => {
+  const nets = os.networkInterfaces();
+  let localIp = "localhost";
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]!) {
+      if (net.family === "IPv4" && !net.internal) {
+        localIp = net.address;
+      }
+    }
+  }
+
+  log(`🚀 Server running:`);
+  log(`   Local:   http://localhost:${port}`);
+  log(`   Network: http://${localIp}:${port}`);
+});
 })();
+

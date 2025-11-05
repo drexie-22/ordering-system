@@ -19,7 +19,7 @@ export function Header({ cartItemCount, onCartClick, searchQuery, onSearchChange
           <Link href="/">
             <a className="flex items-center gap-2 hover-elevate active-elevate-2 rounded-lg px-3 py-2 transition-all" data-testid="link-home">
               <Package className="h-6 w-6 text-primary" />
-              <span className="font-display text-xl font-bold">OrderFlow</span>
+              <span className="font-display text-xl font-bold">LaShoppee</span>
             </a>
           </Link>
 

@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarProvider,
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { StatsCard } from "@/components/StatsCard";
 import { OrdersTable } from "@/components/OrdersTable";
 import { OrderDetailsDialog } from "@/components/OrderDetailsDialog";
@@ -16,14 +25,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Package, ShoppingCart, DollarSign, LayoutDashboard, PackageSearch, ShoppingBag, Plus, Pencil, Trash2, Lock } from "lucide-react";
+import { Package, ShoppingCart, PhilippinePesoIcon, DollarSign, LayoutDashboard, PackageSearch, ShoppingBag, Plus, Pencil, Trash2, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Product, OrderWithItems } from "@shared/types";
+import { useLocation } from "wouter";
 
 export default function AdminDashboardPage() {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
+
   const [activeTab, setActiveTab] = useState<"dashboard" | "products" | "orders">("dashboard");
   const [selectedOrder, setSelectedOrder] = useState<OrderWithItems | null>(null);
   const [productDialogOpen, setProductDialogOpen] = useState(false);
@@ -130,7 +141,7 @@ export default function AdminDashboardPage() {
               Access Dashboard
             </Button>
             <p className="text-xs text-muted-foreground text-center">
-              Default passcode: admin123
+              Welcome Back Bossing!!!
             </p>
           </CardContent>
         </Card>
@@ -193,6 +204,7 @@ export default function AdminDashboardPage() {
               onClick={() => {
                 setIsAuthenticated(false);
                 setPasscode("");
+                setLocation("/"); // Redirect to ProductListingPage
               }}
               data-testid="button-logout"
             >
@@ -220,7 +232,7 @@ export default function AdminDashboardPage() {
                   <StatsCard
                     title="Total Revenue"
                     value={`₱${(reports?.totalRevenue || 0).toFixed(2)}`}
-                    icon={DollarSign}
+                    icon={PhilippinePesoIcon}
                     gradient
                   />
                 </div>

@@ -39,27 +39,30 @@ export default function CartPage() {
   }, []);
 
   const calculateTotal = async (items: CartItem[]) => {
-    const subtotal = items.reduce(
-      (sum, item) => sum + item.product.price * item.quantity,
-      0
+  const subtotal = items.reduce(
+    (sum, item) => sum + item.product.price * item.quantity,
+    0
+  );
+
+  try {
+    const response = await apiRequest(
+      "POST",
+      "/api/calculate-discount",
+      { items: items.map(item => ({ price: item.product.price, quantity: item.quantity })) }
     );
 
-    try {
-      const result = await apiRequest<{ total: number }>(
-        "POST",
-        "/api/calculate-discount",
-        { items: items.map(item => ({ price: item.product.price, quantity: item.quantity })) }
-      );
-      
-      const total = result.total;
-      const discount = subtotal - total;
-      
-      setCalculatedTotal({ subtotal, discount, total });
-    } catch (error) {
-      const discount = subtotal > 1000 ? subtotal * 0.1 : 0;
-      setCalculatedTotal({ subtotal, discount, total: subtotal - discount });
-    }
-  };
+    const result = await response.json() as { total: number };
+    const total = result.total;
+    const discount = subtotal - total;
+
+    setCalculatedTotal({ subtotal, discount, total });
+  } catch (error) {
+    const discount = subtotal > 1000 ? subtotal * 0.1 : 0;
+    setCalculatedTotal({ subtotal, discount, total: subtotal - discount });
+  }
+};
+
+
 
   const createOrderMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -76,20 +79,19 @@ export default function CartPage() {
       });
     },
     onSuccess: (data: any) => {
-      localStorage.removeItem("cart");
-      toast({
-        title: "Order placed successfully!",
-        description: `Your order #${data.id} has been confirmed`,
-      });
-      setLocation(`/order-success?orderId=${data.id}`);
-    },
-    onError: () => {
-      toast({
-        title: "Order failed",
-        description: "There was an error placing your order. Please try again.",
-        variant: "destructive",
-      });
-    },
+  localStorage.removeItem("cart");
+
+  // Redirect to success page with total & discount
+  setLocation(
+  `/order-success?orderId=${data.id}&total=${calculatedTotal.total}&discount=${calculatedTotal.discount}&items=${encodeURIComponent(JSON.stringify(cartItems))}`
+);
+
+  toast({
+    title: "Order placed successfully!",
+    description: `Your order #${data.id} has been confirmed`,
+  });
+},
+
   });
 
   if (cartItems.length === 0) {

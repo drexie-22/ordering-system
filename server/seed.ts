@@ -7,7 +7,7 @@ const sampleProducts = [
     price: 450.00,
     category: "Beverages",
     imageUrl: "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=500",
-    stock: 25,
+    stock: 500,
   },
   {
     name: "Organic Green Tea",
@@ -15,7 +15,7 @@ const sampleProducts = [
     price: 280.00,
     category: "Beverages",
     imageUrl: "https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=500",
-    stock: 30,
+    stock: 3950,
   },
   {
     name: "Wireless Headphones",
@@ -23,7 +23,7 @@ const sampleProducts = [
     price: 3500.00,
     category: "Electronics",
     imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500",
-    stock: 15,
+    stock: 1500,
   },
   {
     name: "Smart Watch Pro",
@@ -31,7 +31,7 @@ const sampleProducts = [
     price: 8999.00,
     category: "Electronics",
     imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500",
-    stock: 12,
+    stock: 1243,
   },
   {
     name: "Yoga Mat Premium",
@@ -47,7 +47,7 @@ const sampleProducts = [
     price: 2499.00,
     category: "Sports",
     imageUrl: "https://images.unsplash.com/photo-1593095948071-474c5cc2989d?w=500",
-    stock: 18,
+    stock: 1867,
   },
   {
     name: "Running Shoes",
@@ -55,7 +55,7 @@ const sampleProducts = [
     price: 4200.00,
     category: "Sports",
     imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500",
-    stock: 8,
+    stock: 8445,
   },
   {
     name: "Bluetooth Speaker",
@@ -63,7 +63,7 @@ const sampleProducts = [
     price: 1899.00,
     category: "Electronics",
     imageUrl: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=500",
-    stock: 22,
+    stock: 2253,
   },
   {
     name: "Organic Honey",
@@ -71,7 +71,7 @@ const sampleProducts = [
     price: 380.00,
     category: "Food",
     imageUrl: "https://images.unsplash.com/photo-1587049352846-4a222e784710?w=500",
-    stock: 40,
+    stock: 40342,
   },
   {
     name: "Dark Chocolate Bar",
@@ -79,7 +79,7 @@ const sampleProducts = [
     price: 150.00,
     category: "Food",
     imageUrl: "https://images.unsplash.com/photo-1511381939415-e44015466834?w=500",
-    stock: 50,
+    stock: 50344,
   },
   {
     name: "Essential Oil Set",
@@ -95,7 +95,7 @@ const sampleProducts = [
     price: 650.00,
     category: "Accessories",
     imageUrl: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=500",
-    stock: 35,
+    stock: 35342,
   },
 ];
 

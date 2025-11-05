@@ -137,9 +137,14 @@ export default function ProductListingPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
         
         <div className="relative z-10 text-center px-4">
-          <h1 className="font-display text-6xl md:text-7xl font-bold mb-4 bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-transparent">
-            Order Fresh & Fast
-          </h1>
+          <h1
+          className="font-display text-6xl md:text-7xl font-bold mb-4 
+                    bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-transparent 
+                    animate-glow"
+        >
+          Order Fresh & Fast w/ 10% OFF
+        </h1>
+
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Browse our wide selection of quality products and get them delivered to your doorstep
           </p>

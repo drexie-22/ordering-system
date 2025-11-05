@@ -1,173 +1,117 @@
-import { useEffect } from "react";
-import { useLocation, Link } from "wouter";
-import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent } from "@/components/ui/card";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, ShoppingBag, Printer } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import type { OrderWithItems } from "@shared/types";
-import { format } from "date-fns";
+import { Card, CardContent } from "@/components/ui/card";
+import { CheckCircle, ShoppingBag } from "lucide-react";
+
+interface OrderItem {
+  name: string;
+  price: number;
+  quantity: number;
+}
 
 export default function OrderSuccessPage() {
-  const [location] = useLocation();
-  const params = new URLSearchParams(location.split("?")[1]);
+  const [, setLocation] = useLocation();
+  const params = new URLSearchParams(window.location.search);
+
   const orderId = params.get("orderId");
+  const total = params.get("total");
+  const discount = params.get("discount");
+  const itemsParam = params.get("items"); // serialized cart items
 
-  const { data: order, isLoading } = useQuery<OrderWithItems>({
-    queryKey: ["/api/orders", orderId],
-    enabled: !!orderId,
-  });
+  const totalAmount = total ? parseFloat(total) : 0;
+  const discountAmount = discount ? parseFloat(discount) : 0;
+  const subtotal = totalAmount + discountAmount;
 
-  useEffect(() => {
-    localStorage.removeItem("cart");
-  }, []);
+  const items: OrderItem[] = itemsParam ? JSON.parse(itemsParam) : [];
+  const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
 
-  const handlePrint = () => {
-    window.print();
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="w-full max-w-2xl border-white/10 bg-card/50 backdrop-blur-sm">
-          <CardContent className="p-8">
-            <Skeleton className="h-32 w-32 rounded-full mx-auto mb-6" />
-            <Skeleton className="h-8 w-3/4 mx-auto mb-4" />
-            <Skeleton className="h-4 w-1/2 mx-auto" />
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (!order) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="font-display text-3xl font-bold mb-4">Order not found</h1>
-          <Link href="/">
-            <a>
-              <Button>Return to Home</Button>
-            </a>
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  
+  // Clear cart just in case
+  localStorage.removeItem("cart");
 
   return (
-    <div className="min-h-screen bg-background py-12">
-      <div className="container mx-auto px-4">
-        <Card className="max-w-3xl mx-auto border-white/10 bg-card/50 backdrop-blur-sm">
-          <CardContent className="p-8 md:p-12">
-            <div className="text-center mb-8">
-              <div className="inline-flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-chart-3/20 to-chart-3/10 mb-6">
-                <CheckCircle className="h-16 w-16 text-chart-3" />
-              </div>
-              <h1 className="font-display text-4xl font-bold mb-2">
-                Order Placed Successfully!
-              </h1>
-              <p className="text-muted-foreground text-lg">
-                Thank you for your order. We'll deliver it to you soon.
-              </p>
-            </div>
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+  {/* Background layers */}
+  <div className="absolute inset-0 bg-gradient-to-br from-primary via-chart-2 to-primary opacity-20" />
+  <div
+    className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1920')] bg-cover bg-center opacity-30"
+  />
+  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
 
-            <div className="bg-gradient-to-br from-primary/10 to-chart-2/10 rounded-xl p-6 mb-6 border border-primary/20">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-muted-foreground mb-1">Order Number</p>
-                  <p className="font-mono font-bold text-lg" data-testid="text-order-number">
-                    #{order.id.toString().padStart(4, "0")}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground mb-1">Order Date</p>
-                  <p className="font-semibold" data-testid="text-order-date">
-                    {format(new Date(order.createdAt), "MMM dd, yyyy")}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground mb-1">Total Amount</p>
-                  <p className="font-bold text-lg text-primary" data-testid="text-order-amount">
-                    ₱{order.totalAmount.toFixed(2)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground mb-1">Payment Method</p>
-                  <p className="font-semibold" data-testid="text-payment-method">
-                    {order.paymentMethod}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="mb-6">
-              <h2 className="font-display text-xl font-semibold mb-4">Delivery Information</h2>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Name:</span>
-                  <span className="font-medium" data-testid="text-customer-name">{order.customerName}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Contact:</span>
-                  <span className="font-medium" data-testid="text-customer-contact">{order.contact}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Address:</span>
-                  <span className="font-medium text-right max-w-[60%]" data-testid="text-customer-address">
-                    {order.address}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="mb-8">
-              <h2 className="font-display text-xl font-semibold mb-4">Order Items</h2>
-              <div className="space-y-3">
-                {order.orderItems.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center gap-4 p-3 rounded-lg bg-background/50"
-                  >
-                    <img
-                      src={item.product.imageUrl}
-                      alt={item.product.name}
-                      className="h-16 w-16 rounded-lg object-cover"
-                    />
-                    <div className="flex-1">
-                      <p className="font-medium">{item.product.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        ₱{item.product.price.toFixed(2)} × {item.quantity}
-                      </p>
-                    </div>
-                    <p className="font-semibold">₱{item.subtotal.toFixed(2)}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={handlePrint}
-                data-testid="button-print-receipt"
-              >
-                <Printer className="h-4 w-4 mr-2" />
-                Print Receipt
-              </Button>
-              <Link href="/">
-                <a className="flex-1">
-                  <Button className="w-full" data-testid="button-continue-shopping">
-                    <ShoppingBag className="h-4 w-4 mr-2" />
-                    Continue Shopping
-                  </Button>
-                </a>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
+  {/* Card content */}
+  <Card className="relative z-10 rounded-2xl shadow-2xl max-w-2xl w-full bg-white/90 backdrop-blur-md">
+    <CardContent className="p-12 text-center">
+      <div className="mb-8 flex justify-center">
+        <div className="bg-green-100 rounded-full p-6">
+          <CheckCircle className="h-24 w-24 text-green-500" />
+        </div>
       </div>
-    </div>
+
+      <h1 className="text-4xl font-bold mb-4 text-gray-800">
+        Order Placed Successfully!
+      </h1>
+
+      <p className="text-gray-600 mb-8 text-lg">
+        Thank you for your order. Please order again!
+      </p>
+
+      <div className="bg-white/80 rounded-lg p-6 mb-8 space-y-3 text-left">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-gray-600 font-medium">Order:</span>
+          <span className="font-semibold text-gray-800">To be delivered</span>
+        </div>
+
+         <div className="flex justify-between items-center mb-2">
+          <span className="text-gray-600 font-medium">Order Quantity:</span>
+          <span className="font-semibold text-gray-800">{totalQuantity}</span>
+        </div>
+      
+
+        {/* Items list */}
+        {items.length > 0 && (
+            <div className="mb-2">
+              {items.map((item, index) => (
+                <div key={index} className="text-gray-800 text-sm mb-1">
+                  <span>{item.name}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+
+        {discountAmount > 0 && (
+          <>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-700 font-medium">Subtotal:</span>
+              <span className="font-semibold text-gray-800">
+                ₱{subtotal.toFixed(2)}
+              </span>
+            </div>
+            <div className="flex justify-between items-center text-green-600">
+              <span>Discount:</span>
+              <span className="font-semibold">-₱{discountAmount.toFixed(2)}</span>
+            </div>
+          </>
+        )}
+
+        <div className="flex justify-between items-center pt-3 border-t border-gray-300">
+          <span className="text-xl font-bold text-gray-800">Total Amount:</span>
+          <span className="text-2xl font-bold text-blue-600">
+            ₱{totalAmount.toFixed(2)}
+          </span>
+        </div>
+      </div>
+
+      <Button
+        onClick={() => setLocation("/")}
+        className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white shadow-lg transition-all duration-300 px-8 py-6 text-lg"
+      >
+        <ShoppingBag className="mr-2 h-5 w-5" />
+        Continue Shopping
+      </Button>
+    </CardContent>
+  </Card>
+</div>
+
   );
 }
